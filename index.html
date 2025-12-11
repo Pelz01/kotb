@@ -81,14 +81,21 @@
         .toast {
             position: fixed;
             top: 24px;
-            right: -400px;
+            right: -100%;
             transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 50;
             background: #000;
             border: 1px solid #333;
+            max-width: 90vw;
+            width: 400px;
         }
         .toast.show {
             right: 24px;
+        }
+        @media (max-width: 640px) {
+            .toast.show {
+                right: 5vw;
+            }
         }
         /* Loading Spinner */
         .spinner {
@@ -174,25 +181,37 @@
             </div>
             <!-- Form -->
             <div class="space-y-8">
-                <div class="relative">
-                    <input type="text" id="messageInput" maxlength="50" placeholder=" "
-                        class="mono-input w-full py-4 text-lg md:text-xl peer placeholder-transparent">
-                    <label
-                        class="absolute left-0 top-4 text-grey text-lg md:text-xl transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-white peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-white pointer-events-none font-mono">
-                        ENTER YOUR PROCLAMATION
-                    </label>
+                <div class="space-y-6">
+                    <!-- Message and Bid Inputs -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-2 relative">
+                            <input type="text" id="messageInput" maxlength="50" placeholder=" "
+                                class="mono-input w-full py-4 text-lg md:text-xl peer placeholder-transparent">
+                            <label
+                                class="absolute left-0 top-4 text-grey text-lg md:text-xl transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-white peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-white pointer-events-none font-mono">
+                                ENTER YOUR PROCLAMATION
+                            </label>
+                        </div>
+                        <div class="relative">
+                            <input type="number" id="bidInput" step="0.0001" placeholder=" "
+                                class="mono-input w-full py-4 text-lg md:text-xl peer placeholder-transparent font-mono text-cyan-400">
+                            <label
+                                class="absolute left-0 top-4 text-grey text-lg md:text-xl transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-cyan-400 peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-cyan-400 pointer-events-none font-mono">
+                                BID (ETH)
+                            </label>
+                        </div>
+                    </div>
+                    <button id="claimBtn"
+                        class="btn-mono w-full py-5 text-xs md:text-sm font-mono uppercase tracking-[0.2em] font-bold flex items-center justify-center gap-3">
+                        <span id="btnText">Claim Throne</span>
+                        <div id="btnSpinner" class="spinner hidden"></div>
+                    </button>
+                    <p id="networkError"
+                        class="text-red-500 font-mono text-xs text-center hidden mt-4 border border-red-900 p-2">
+                        ⚠ SWITCH TO SEPOLIA NETWORK
+                    </p>
                 </div>
-                <button id="claimBtn"
-                    class="btn-mono w-full py-5 text-xs md:text-sm font-mono uppercase tracking-[0.2em] font-bold flex items-center justify-center gap-3">
-                    <span id="btnText">Claim Throne</span>
-                    <div id="btnSpinner" class="spinner hidden"></div>
-                </button>
-                <p id="networkError"
-                    class="text-red-500 font-mono text-xs text-center hidden mt-4 border border-red-900 p-2">
-                    ⚠ SWITCH TO SEPOLIA NETWORK
-                </p>
             </div>
-        </div>
     </main>
     <footer class="w-full py-8 border-t border-white/5 mt-auto">
         <div
@@ -231,6 +250,7 @@
         const nextMinBidDisplay = document.getElementById('nextMinBidDisplay');
         const priceBar = document.getElementById('priceBar');
         const messageInput = document.getElementById('messageInput');
+        const bidInput = document.getElementById('bidInput');
         const claimBtn = document.getElementById('claimBtn');
         const btnText = document.getElementById('btnText');
         const btnSpinner = document.getElementById('btnSpinner');
@@ -369,6 +389,10 @@
                 const minBid = price.mul(105).div(100);
                 const ethMinBid = ethers.utils.formatEther(minBid);
                 nextMinBidDisplay.innerText = (+ethMinBid).toFixed(4);
+                // Auto-fill bid input if empty
+                if (!bidInput.value) {
+                    bidInput.value = (+ethMinBid).toFixed(5);
+                }
                 // Animate bar
                 priceBar.style.width = (Math.random() * 50 + 40) + '%';
             } catch (err) {
@@ -388,6 +412,11 @@
                 showToast("Input", "Enter a message");
                 return;
             }
+            const bidVal = bidInput.value;
+            if (!bidVal) {
+                showToast("Input", "Enter bid amount");
+                return;
+            }
             // Final Network Check
             const network = await provider.getNetwork();
             if (network.chainId !== SEPOLIA_CHAIN_ID) {
@@ -396,7 +425,7 @@
             }
             setLoading(true);
             try {
-                const bidAmount = currentPriceVal.mul(105).div(100);
+                const bidAmount = ethers.utils.parseEther(bidVal);
                 const tx = await contract.claimThrone(msg, { value: bidAmount });
                 showToast("Mining", "Transaction broadcast...");
                 await tx.wait();
@@ -433,6 +462,10 @@
         function showToast(title, msg) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-title').innerText = title;
+            // Truncate long error messages to prevent full screen takeover
+            if (msg.length > 120) {
+                msg = msg.slice(0, 117) + "...";
+            }
             document.getElementById('toast-msg').innerText = msg;
             toast.classList.add('show');
             setTimeout(() => {
@@ -442,3 +475,4 @@
     </script>
 </body>
 </html>
+
