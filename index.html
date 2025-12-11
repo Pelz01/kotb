@@ -1,3 +1,7 @@
+
+index.html
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -123,6 +127,43 @@
         .tracking-tightest {
             letter-spacing: -0.05em;
         }
+        /* Logout Dropdown */
+        .logout-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: #000;
+            border: 1px solid #333;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+        .logout-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .logout-dropdown button {
+            width: 100%;
+            text-align: left;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-family: 'Space Grotesk', monospace;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .logout-dropdown button:hover {
+            background: #111;
+            color: #ff4444;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-white selection:text-black">
@@ -142,11 +183,16 @@
             </div>
             <span class="font-mono font-bold text-lg tracking-tightest uppercase">KingOfTheBlock</span>
         </div>
-        <button id="connectBtn"
-            class="px-6 py-2 border border-white/20 hover:border-white transition-colors text-xs font-mono uppercase tracking-widest flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-red-500" id="walletStatusDot"></span>
-            <span id="connectBtnText">Connect Wallet</span>
-        </button>
+        <div class="relative">
+            <button id="connectBtn"
+                class="px-6 py-2 border border-white/20 hover:border-white transition-colors text-xs font-mono uppercase tracking-widest flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500" id="walletStatusDot"></span>
+                <span id="connectBtnText">Connect Wallet</span>
+            </button>
+            <div id="logoutDropdown" class="logout-dropdown">
+                <button id="logoutBtn">Disconnect Wallet</button>
+            </div>
+        </div>
     </nav>
     <!-- Main Content -->
     <main class="flex-grow flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-6">
@@ -228,6 +274,7 @@
         const CONTRACT_ADDRESS = "0x9bD587253963B1C287C50C2260C7e00d8D28A8DE";
         const SEPOLIA_CHAIN_ID = 11155111;
         const SEPOLIA_HEX = "0xaa36a7";
+        const PUBLIC_RPC = "https://rpc.sepolia.org";
         // Minimal ABI
         const ABI = [
             "function currentPrice() view returns (uint256)",
@@ -240,6 +287,7 @@
         let provider, signer, contract;
         let userAddress = null;
         let currentPriceVal = ethers.BigNumber.from(0);
+        let publicProvider; // Fallback for reading without wallet
         // --- DOM ELEMENTS ---
         const connectBtn = document.getElementById('connectBtn');
         const connectBtnText = document.getElementById('connectBtnText');
@@ -257,6 +305,13 @@
         const networkError = document.getElementById('networkError');
         // --- INIT ---
         window.addEventListener('load', async () => {
+            // Always init public provider for reading contract state
+            publicProvider = new ethers.providers.JsonRpcProvider(PUBLIC_RPC);
+            contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, publicProvider);
+            // Initial fetch with public provider
+            fetchContractState().catch(e => console.log("Initial fetch failed", e));
+            // Polling to keep UI in sync
+            setInterval(fetchContractState, 5000);
             // Check for wallet
             if (typeof window.ethereum !== 'undefined') {
                 provider = new ethers.providers.Web3Provider(window.ethereum, "any");
@@ -272,39 +327,22 @@
                 // Listeners
                 window.ethereum.on('accountsChanged', handleAccountsChanged);
                 window.ethereum.on('chainChanged', () => window.location.reload());
-                // Read-only contract init (if not already set by handleAccountsChanged)
-                if (!contract) {
-                    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-                    fetchContractState().catch(e => console.log("Read-only fetch failed", e));
-                }
-                // Polling to keep UI in sync (fixes potential RPC lag or missed events)
-                setInterval(fetchContractState, 5000);
             } else {
                 connectBtnText.innerText = "Install Wallet";
                 connectBtn.onclick = () => window.open("https://metamask.io/download/", "_blank");
             }
         });
         // --- CONNECT WALLET ---
+        const logoutDropdown = document.getElementById('logoutDropdown');
+        const logoutBtn = document.getElementById('logoutBtn');
         connectBtn.addEventListener('click', async () => {
             if (typeof window.ethereum === 'undefined') {
                 window.open("https://metamask.io/download/", "_blank");
                 return;
             }
-            // If connected, show logout option
+            // If connected, toggle dropdown
             if (userAddress) {
-                const shouldLogout = confirm("Disconnect wallet?");
-                if (shouldLogout) {
-                    // Reset state
-                    userAddress = null;
-                    signer = null;
-                    if (contract) contract.removeAllListeners("ThroneClaimed");
-                    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-                    // Update UI
-                    connectBtnText.innerText = "Connect Wallet";
-                    walletStatusDot.classList.remove('bg-green-500');
-                    walletStatusDot.classList.add('bg-red-500');
-                    showToast("Disconnected", "Wallet disconnected");
-                }
+                logoutDropdown.classList.toggle('show');
                 return;
             }
             try {
@@ -318,6 +356,26 @@
                 } else {
                     showToast("Error", "Connection failed");
                 }
+            }
+        });
+        // Logout button handler
+        logoutBtn.addEventListener('click', () => {
+            // Reset state
+            userAddress = null;
+            signer = null;
+            if (contract) contract.removeAllListeners("ThroneClaimed");
+            contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, publicProvider);
+            // Update UI
+            connectBtnText.innerText = "Connect Wallet";
+            walletStatusDot.classList.remove('bg-green-500');
+            walletStatusDot.classList.add('bg-red-500');
+            logoutDropdown.classList.remove('show');
+            showToast("Disconnected", "Wallet disconnected");
+        });
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!connectBtn.contains(e.target) && !logoutDropdown.contains(e.target)) {
+                logoutDropdown.classList.remove('show');
             }
         });
         async function handleAccountsChanged(accounts) {
@@ -387,10 +445,9 @@
             }
         }
         async function fetchContractState() {
-            if (!provider) return;
             try {
-                // Use signer if available, else provider
-                const contractReader = signer ? contract : new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+                // Use contract with signer if available, otherwise it uses publicProvider
+                const contractReader = contract;
                 const price = await contractReader.currentPrice();
                 const msg = await contractReader.currentMessage();
                 const king = await contractReader.currentKing();
