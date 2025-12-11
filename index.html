@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King of the Block</title>
+    <title>King of the Block | Minimalist</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Ethers.js -->
@@ -339,19 +339,24 @@
         const logoutDropdown = document.getElementById('logoutDropdown');
         const logoutBtn = document.getElementById('logoutBtn');
         connectBtn.addEventListener('click', async () => {
+            console.log("Connect button clicked. userAddress:", userAddress, "buttonText:", connectBtnText.innerText);
             if (typeof window.ethereum === 'undefined') {
+                console.log("MetaMask not detected, opening download page");
                 window.open("https://metamask.io/download/", "_blank");
                 return;
             }
             // If connected (check both userAddress and button text to be sure), toggle dropdown
             if (userAddress && connectBtnText.innerText !== "Connect Wallet") {
+                console.log("Already connected, toggling dropdown");
                 logoutDropdown.classList.toggle('show');
                 return;
             }
             // Otherwise, connect
+            console.log("Attempting to connect...");
             try {
                 // Request accounts
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                console.log("Got accounts:", accounts);
                 if (accounts && accounts.length > 0) {
                     handleAccountsChanged(accounts);
                 } else {
@@ -387,6 +392,7 @@
             }
         });
         async function handleAccountsChanged(accounts) {
+            console.log("handleAccountsChanged called with:", accounts);
             if (accounts.length === 0) {
                 console.warn("Please connect to MetaMask.");
                 userAddress = null;
@@ -394,12 +400,22 @@
                 walletStatusDot.classList.remove('bg-green-500');
                 walletStatusDot.classList.add('bg-red-500');
             } else {
+                // Ensure provider is set
+                if (!provider && typeof window.ethereum !== 'undefined') {
+                    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+                }
+                if (!provider) {
+                    console.error("Provider not available");
+                    showToast("Error", "Wallet provider not available");
+                    return;
+                }
                 userAddress = accounts[0];
                 signer = provider.getSigner();
                 const shortAddr = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
                 connectBtnText.innerText = shortAddr;
                 walletStatusDot.classList.remove('bg-red-500');
                 walletStatusDot.classList.add('bg-green-500');
+                console.log("Wallet connected:", shortAddr);
                 // Re-init contract with signer
                 contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
                 // Setup Events
