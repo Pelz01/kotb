@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King of the Block</title>
+    <title>King of the Block | Minimalist</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Ethers.js -->
@@ -271,7 +271,8 @@
         const CONTRACT_ADDRESS = "0x9bD587253963B1C287C50C2260C7e00d8D28A8DE";
         const SEPOLIA_CHAIN_ID = 11155111;
         const SEPOLIA_HEX = "0xaa36a7";
-        const PUBLIC_RPC = "https://rpc.sepolia.org";
+        // Using Alchemy public Sepolia RPC (more reliable than sepolia.org)
+        const PUBLIC_RPC = "https://eth-sepolia.g.alchemy.com/v2/demo";
         // Minimal ABI
         const ABI = [
             "function currentPrice() view returns (uint256)",
@@ -302,16 +303,19 @@
         const networkError = document.getElementById('networkError');
         // --- INIT ---
         window.addEventListener('load', async () => {
+            console.log("Page loaded, initializing public provider...");
             // Always init public provider for reading contract state
             publicProvider = new ethers.providers.JsonRpcProvider(PUBLIC_RPC);
             contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, publicProvider);
+            console.log("Public provider initialized:", PUBLIC_RPC);
             // Initial fetch with public provider
             try {
+                console.log("Fetching contract state...");
                 await fetchContractState();
-                console.log("Initial fetch succeeded");
+                console.log("Initial fetch succeeded!");
             } catch (e) {
                 console.error("Initial fetch failed:", e);
-                showToast("Error", "Failed to load billboard data");
+                showToast("Error", "Failed to load billboard. Try refreshing.");
             }
             // Polling to keep UI in sync
             setInterval(fetchContractState, 5000);
