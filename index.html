@@ -1,3 +1,7 @@
+
+index.html
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -277,6 +281,8 @@
                     contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
                     fetchContractState().catch(e => console.log("Read-only fetch failed", e));
                 }
+                // Polling to keep UI in sync (fixes potential RPC lag or missed events)
+                setInterval(fetchContractState, 5000);
             } else {
                 connectBtnText.innerText = "Install Wallet";
                 connectBtn.onclick = () => window.open("https://metamask.io/download/", "_blank");
@@ -475,4 +481,3 @@
     </script>
 </body>
 </html>
-
