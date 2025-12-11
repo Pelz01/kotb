@@ -1,13 +1,9 @@
-
-index.html
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King of the Block | Minimalist</title>
+    <title>King of the Block</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Ethers.js -->
@@ -234,7 +230,7 @@ index.html
                             <input type="text" id="messageInput" maxlength="50" placeholder=" "
                                 class="mono-input w-full py-4 text-lg md:text-xl peer placeholder-transparent">
                             <label
-                                class="absolute left-0 top-4 text-grey text-lg md:text-xl transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-white peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-white pointer-events-none font-mono">
+                                class="absolute left-0 top-0 text-grey text-xs transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-lg peer-placeholder-shown:md:text-xl peer-focus:top-0 peer-focus:text-xs peer-focus:text-white peer-not-placeholder-shown:text-white pointer-events-none font-mono">
                                 ENTER YOUR PROCLAMATION
                             </label>
                         </div>
@@ -242,7 +238,7 @@ index.html
                             <input type="number" id="bidInput" step="0.0001" placeholder=" "
                                 class="mono-input w-full py-4 text-lg md:text-xl peer placeholder-transparent font-mono text-cyan-400">
                             <label
-                                class="absolute left-0 top-4 text-grey text-lg md:text-xl transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-cyan-400 peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-cyan-400 pointer-events-none font-mono">
+                                class="absolute left-0 top-0 text-grey text-xs transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-lg peer-placeholder-shown:md:text-xl peer-focus:top-0 peer-focus:text-xs peer-focus:text-cyan-400 peer-not-placeholder-shown:text-cyan-400 pointer-events-none font-mono">
                                 BID (ETH)
                             </label>
                         </div>
@@ -258,6 +254,7 @@ index.html
                     </p>
                 </div>
             </div>
+        </div>
     </main>
     <footer class="w-full py-8 border-t border-white/5 mt-auto">
         <div
@@ -309,7 +306,13 @@ index.html
             publicProvider = new ethers.providers.JsonRpcProvider(PUBLIC_RPC);
             contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, publicProvider);
             // Initial fetch with public provider
-            fetchContractState().catch(e => console.log("Initial fetch failed", e));
+            try {
+                await fetchContractState();
+                console.log("Initial fetch succeeded");
+            } catch (e) {
+                console.error("Initial fetch failed:", e);
+                showToast("Error", "Failed to load billboard data");
+            }
             // Polling to keep UI in sync
             setInterval(fetchContractState, 5000);
             // Check for wallet
