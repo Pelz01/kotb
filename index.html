@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +14,6 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
         rel="stylesheet">
-
     <script>
         tailwind.config = {
             theme: {
@@ -34,23 +32,19 @@
             }
         }
     </script>
-
     <style>
         body {
             background-color: #000000;
             color: #ffffff;
         }
-
         /* Minimalist Borders & Inputs */
         .sharp-border {
             border: 1px solid #333;
             transition: border-color 0.2s ease;
         }
-
         .sharp-border:hover {
             border-color: #666;
         }
-
         .mono-input {
             background: transparent;
             border-bottom: 1px solid #333;
@@ -61,12 +55,10 @@
             color: white;
             transition: all 0.3s ease;
         }
-
         .mono-input:focus {
             outline: none;
             border-bottom-color: #fff;
         }
-
         /* Brutalist Button */
         .btn-mono {
             background: white;
@@ -74,21 +66,17 @@
             border: 1px solid white;
             transition: all 0.2s ease;
         }
-
         .btn-mono:hover:not(:disabled) {
             background: black;
             color: white;
         }
-
         .btn-mono:active:not(:disabled) {
             transform: scale(0.98);
         }
-
         .btn-mono:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-
         /* Custom Toast */
         .toast {
             position: fixed;
@@ -99,11 +87,9 @@
             background: #000;
             border: 1px solid #333;
         }
-
         .toast.show {
             right: 24px;
         }
-
         /* Loading Spinner */
         .spinner {
             border: 2px solid rgba(0, 0, 0, 0.1);
@@ -114,31 +100,25 @@
             height: 16px;
             animation: spin 0.8s linear infinite;
         }
-
         .btn-mono:hover .spinner {
             border-color: rgba(255, 255, 255, 0.2);
             border-top-color: white;
         }
-
         @keyframes spin {
             0% {
                 transform: rotate(0deg);
             }
-
             100% {
                 transform: rotate(360deg);
             }
         }
-
         /* Utility */
         .tracking-tightest {
             letter-spacing: -0.05em;
         }
     </style>
 </head>
-
 <body class="min-h-screen flex flex-col antialiased selection:bg-white selection:text-black">
-
     <!-- Toast Notification -->
     <div id="toast" class="toast px-6 py-4 flex items-center gap-4 min-w-[300px]">
         <div id="toast-indicator" class="w-2 h-2 bg-white rounded-full"></div>
@@ -147,7 +127,6 @@
             <p id="toast-msg" class="text-sm font-medium mt-1">Message goes here</p>
         </div>
     </div>
-
     <!-- Navbar -->
     <nav class="w-full max-w-7xl mx-auto px-6 py-8 flex justify-between items-center z-10">
         <div class="flex items-center gap-3">
@@ -162,10 +141,8 @@
             <span id="connectBtnText">Connect Wallet</span>
         </button>
     </nav>
-
     <!-- Main Content -->
     <main class="flex-grow flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-6">
-
         <!-- Hero Message -->
         <div class="w-full text-center mb-12 md:mb-20">
             <div class="mb-6 flex justify-center">
@@ -174,13 +151,11 @@
                     <span id="currentKingAddress" class="font-mono text-xs">0x0000...0000</span>
                 </div>
             </div>
-
             <h1 id="heroMessage"
                 class="text-4xl md:text-6xl lg:text-8xl font-bold tracking-tighter leading-none mb-8 break-words max-w-4xl mx-auto px-2">
                 The Block is Empty
             </h1>
         </div>
-
         <!-- Action Area -->
         <div class="w-full max-w-xl">
             <div class="grid grid-cols-2 gap-px bg-white/10 border border-white/10 mb-8">
@@ -193,12 +168,10 @@
                     <p id="nextMinBidDisplay" class="text-xl md:text-2xl font-mono text-white">0.0011</p>
                 </div>
             </div>
-
             <!-- Progress Line -->
             <div class="w-full h-px bg-white/10 mb-12 relative">
                 <div id="priceBar" class="absolute left-0 top-0 h-full bg-white transition-all duration-1000 w-0"></div>
             </div>
-
             <!-- Form -->
             <div class="space-y-8">
                 <div class="relative">
@@ -209,22 +182,18 @@
                         ENTER YOUR PROCLAMATION
                     </label>
                 </div>
-
                 <button id="claimBtn"
                     class="btn-mono w-full py-5 text-xs md:text-sm font-mono uppercase tracking-[0.2em] font-bold flex items-center justify-center gap-3">
                     <span id="btnText">Claim Throne</span>
                     <div id="btnSpinner" class="spinner hidden"></div>
                 </button>
-
                 <p id="networkError"
                     class="text-red-500 font-mono text-xs text-center hidden mt-4 border border-red-900 p-2">
                     ⚠ SWITCH TO SEPOLIA NETWORK
                 </p>
             </div>
-
         </div>
     </main>
-
     <footer class="w-full py-8 border-t border-white/5 mt-auto">
         <div
             class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center md:items-end gap-4 text-[10px] text-grey uppercase tracking-widest">
@@ -234,14 +203,12 @@
             </p>
         </div>
     </footer>
-
     <!-- JS Logic -->
     <script>
         // --- CONSTANTS ---
         const CONTRACT_ADDRESS = "0x9bD587253963B1C287C50C2260C7e00d8D28A8DE";
         const SEPOLIA_CHAIN_ID = 11155111;
         const SEPOLIA_HEX = "0xaa36a7";
-
         // Minimal ABI
         const ABI = [
             "function currentPrice() view returns (uint252)",
@@ -250,35 +217,29 @@
             "function claimThrone(string memory _message) payable",
             "event ThroneClaimed(address indexed user, uint256 amount, string note)"
         ];
-
         // --- STATE ---
         let provider, signer, contract;
         let userAddress = null;
         let currentPriceVal = ethers.BigNumber.from(0);
-
         // --- DOM ELEMENTS ---
         const connectBtn = document.getElementById('connectBtn');
         const connectBtnText = document.getElementById('connectBtnText');
         const walletStatusDot = document.getElementById('walletStatusDot');
-
         const heroMessage = document.getElementById('heroMessage');
         const currentKingDisplay = document.getElementById('currentKingAddress');
         const currentPriceDisplay = document.getElementById('currentPriceDisplay');
         const nextMinBidDisplay = document.getElementById('nextMinBidDisplay');
         const priceBar = document.getElementById('priceBar');
-
         const messageInput = document.getElementById('messageInput');
         const claimBtn = document.getElementById('claimBtn');
         const btnText = document.getElementById('btnText');
         const btnSpinner = document.getElementById('btnSpinner');
         const networkError = document.getElementById('networkError');
-
         // --- INIT ---
         window.addEventListener('load', async () => {
             // Check for wallet
             if (typeof window.ethereum !== 'undefined') {
                 provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-
                 // Auto-connect if trusted
                 try {
                     const accounts = await provider.listAccounts();
@@ -288,38 +249,31 @@
                 } catch (err) {
                     console.warn("Auto-connect failed", err);
                 }
-
                 // Listeners
                 window.ethereum.on('accountsChanged', handleAccountsChanged);
                 window.ethereum.on('chainChanged', () => window.location.reload());
-
-                // Read-only contract init (even if not connected)
-                // We use a separate read-only provider for data if wallet is locked? 
-                // Creating a read-only instance with existing provider usually works if provider is available
-                contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-                // Try fetching state immediately
-                fetchContractState().catch(e => console.log("Read-only fetch failed (network?)", e));
-
+                // Read-only contract init (if not already set by handleAccountsChanged)
+                if (!contract) {
+                    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+                    fetchContractState().catch(e => console.log("Read-only fetch failed", e));
+                }
             } else {
                 connectBtnText.innerText = "Install Wallet";
                 connectBtn.onclick = () => window.open("https://metamask.io/download/", "_blank");
             }
         });
-
         // --- CONNECT WALLET ---
         connectBtn.addEventListener('click', async () => {
             if (typeof window.ethereum === 'undefined') {
                 window.open("https://metamask.io/download/", "_blank");
                 return;
             }
-
             // If connected, maybe do nothing or show copy address?
             if (userAddress) {
                 navigator.clipboard.writeText(userAddress);
                 showToast("Copied", "Address copied to clipboard");
                 return;
             }
-
             try {
                 // Request accounts
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -333,7 +287,6 @@
                 }
             }
         });
-
         async function handleAccountsChanged(accounts) {
             if (accounts.length === 0) {
                 console.warn("Please connect to MetaMask.");
@@ -344,28 +297,23 @@
             } else {
                 userAddress = accounts[0];
                 signer = provider.getSigner();
-
                 const shortAddr = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
                 connectBtnText.innerText = shortAddr;
                 walletStatusDot.classList.remove('bg-red-500');
                 walletStatusDot.classList.add('bg-green-500');
-
                 // Re-init contract with signer
                 contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-
                 // Setup Events
                 contract.removeAllListeners("ThroneClaimed"); // Prevent duplicates
                 contract.on("ThroneClaimed", (user, amount, note) => {
                     showToast("New Ruler", `King: ${truncateAddress(user)}`);
                     fetchContractState();
                 });
-
                 // Check Network
                 checkNetwork();
                 fetchContractState();
             }
         }
-
         async function checkNetwork() {
             const network = await provider.getNetwork();
             if (network.chainId !== SEPOLIA_CHAIN_ID) {
@@ -375,7 +323,6 @@
                 networkError.classList.add('hidden');
             }
         }
-
         window.switchNetwork = async () => {
             try {
                 await window.ethereum.request({
@@ -406,38 +353,29 @@
                 }
             }
         }
-
         async function fetchContractState() {
             if (!provider) return;
             try {
                 // Use signer if available, else provider
                 const contractReader = signer ? contract : new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-
                 const price = await contractReader.currentPrice();
                 const msg = await contractReader.currentMessage();
                 const king = await contractReader.currentKing();
-
                 currentPriceVal = price;
-
                 heroMessage.innerText = msg;
                 currentKingDisplay.innerText = truncateAddress(king);
-
                 const ethPrice = ethers.utils.formatEther(price);
                 currentPriceDisplay.innerText = (+ethPrice).toFixed(4) + " ETH";
-
                 const minBid = price.mul(105).div(100);
                 const ethMinBid = ethers.utils.formatEther(minBid);
                 nextMinBidDisplay.innerText = (+ethMinBid).toFixed(4);
-
                 // Animate bar
                 priceBar.style.width = (Math.random() * 50 + 40) + '%';
-
             } catch (err) {
                 console.error("Error fetching state:", err);
                 // Don't toast on auto-fetch errors, it's annoying
             }
         }
-
         // --- CLAIM ACTION ---
         claimBtn.addEventListener('click', async () => {
             if (!userAddress) {
@@ -445,27 +383,22 @@
                 connectBtn.click();
                 return;
             }
-
             const msg = messageInput.value;
             if (!msg) {
                 showToast("Input", "Enter a message");
                 return;
             }
-
             // Final Network Check
             const network = await provider.getNetwork();
             if (network.chainId !== SEPOLIA_CHAIN_ID) {
                 switchNetwork();
                 return;
             }
-
             setLoading(true);
-
             try {
                 const bidAmount = currentPriceVal.mul(105).div(100);
                 const tx = await contract.claimThrone(msg, { value: bidAmount });
                 showToast("Mining", "Transaction broadcast...");
-
                 await tx.wait();
                 showToast("Success", "Hail the new King!");
                 messageInput.value = "";
@@ -481,13 +414,11 @@
                 setLoading(false);
             }
         });
-
         // --- UTILS ---
         function truncateAddress(addr) {
             if (!addr || addr === ethers.constants.AddressZero) return "0x000...0000";
             return addr.slice(0, 6) + "..." + addr.slice(-4);
         }
-
         function setLoading(isLoading) {
             if (isLoading) {
                 btnText.classList.add('hidden');
@@ -499,19 +430,15 @@
                 claimBtn.disabled = false;
             }
         }
-
         function showToast(title, msg) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-title').innerText = title;
             document.getElementById('toast-msg').innerText = msg;
-
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
         }
-
     </script>
 </body>
-
 </html>
