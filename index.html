@@ -1,3 +1,7 @@
+
+index.html
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -123,6 +127,128 @@
         .tracking-tightest {
             letter-spacing: -0.05em;
         }
+        /* Billboard Styles */
+        .billboard-container {
+            perspective: 1000px;
+        }
+        .billboard {
+            position: relative;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+            border: 8px solid #2a2a2a;
+            border-radius: 4px;
+            box-shadow:
+                0 0 0 4px #1a1a1a,
+                0 0 0 8px #333,
+                0 20px 60px rgba(0, 0, 0, 0.8),
+                inset 0 0 100px rgba(0, 0, 0, 0.5);
+            transform: rotateX(2deg);
+        }
+        .billboard::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 8px;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    #444 10%,
+                    #666 50%,
+                    #444 90%,
+                    transparent 100%);
+            border-radius: 4px;
+        }
+        /* Billboard Lights */
+        .billboard-lights {
+            position: absolute;
+            top: -12px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 10%;
+        }
+        .light {
+            width: 8px;
+            height: 8px;
+            background: #ffcc00;
+            border-radius: 50%;
+            box-shadow:
+                0 0 10px #ffcc00,
+                0 0 20px #ffcc00,
+                0 0 30px rgba(255, 204, 0, 0.5),
+                0 10px 40px rgba(255, 204, 0, 0.3);
+            animation: flicker 3s infinite;
+        }
+        .light:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        .light:nth-child(3) {
+            animation-delay: 1s;
+        }
+        .light:nth-child(4) {
+            animation-delay: 1.5s;
+        }
+        .light:nth-child(5) {
+            animation-delay: 2s;
+        }
+        @keyframes flicker {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            52% {
+                opacity: 1;
+            }
+            54% {
+                opacity: 0.9;
+            }
+        }
+        /* Billboard Poles */
+        .billboard-poles {
+            position: absolute;
+            bottom: -60px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15%;
+        }
+        .pole {
+            width: 12px;
+            height: 60px;
+            background: linear-gradient(90deg, #555 0%, #333 50%, #555 100%);
+            border-radius: 2px;
+        }
+        /* Billboard Content */
+        .billboard-content {
+            padding: 2rem 1.5rem;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        @media (min-width: 768px) {
+            .billboard-content {
+                padding: 3rem 2rem;
+                min-height: 280px;
+            }
+        }
+        .billboard-message {
+            font-size: clamp(1.5rem, 5vw, 4rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            text-align: center;
+            word-break: break-word;
+        }
         /* Logout Dropdown */
         .logout-dropdown {
             position: absolute;
@@ -192,18 +318,38 @@
     </nav>
     <!-- Main Content -->
     <main class="flex-grow flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-6">
-        <!-- Hero Message -->
-        <div class="w-full text-center mb-12 md:mb-20">
-            <div class="mb-6 flex justify-center">
+        <!-- Hero Message - Billboard Style -->
+        <div class="w-full text-center mb-8 md:mb-16">
+            <div class="mb-4 flex justify-center">
                 <div class="border border-white/20 px-4 py-1 rounded-full inline-flex items-center gap-2">
                     <span class="text-[10px] uppercase tracking-[0.2em] text-grey">Current Ruler</span>
                     <span id="currentKingAddress" class="font-mono text-xs">0x0000...0000</span>
                 </div>
             </div>
-            <h1 id="heroMessage"
-                class="text-4xl md:text-6xl lg:text-8xl font-bold tracking-tighter leading-none mb-8 break-words max-w-4xl mx-auto px-2">
-                The Block is Empty
-            </h1>
+            <!-- The Billboard -->
+            <div class="billboard-container max-w-3xl mx-auto px-4 mt-8 mb-16">
+                <div class="billboard">
+                    <!-- Lights on top -->
+                    <div class="billboard-lights">
+                        <div class="light"></div>
+                        <div class="light"></div>
+                        <div class="light"></div>
+                        <div class="light"></div>
+                        <div class="light"></div>
+                    </div>
+                    <!-- Content -->
+                    <div class="billboard-content">
+                        <p id="heroMessage" class="billboard-message">
+                            The Block is Empty
+                        </p>
+                    </div>
+                    <!-- Support poles -->
+                    <div class="billboard-poles">
+                        <div class="pole"></div>
+                        <div class="pole"></div>
+                    </div>
+                </div>
+            </div>
         </div>
         <!-- Action Area -->
         <div class="w-full max-w-xl">
@@ -271,8 +417,8 @@
         const CONTRACT_ADDRESS = "0x9bD587253963B1C287C50C2260C7e00d8D28A8DE";
         const SEPOLIA_CHAIN_ID = 11155111;
         const SEPOLIA_HEX = "0xaa36a7";
-        // Using Ankr free public RPC (no API key required)
-        const PUBLIC_RPC = "https://rpc.ankr.com/eth_sepolia";
+        // Alchemy Sepolia RPC
+        const PUBLIC_RPC = "https://eth-sepolia.g.alchemy.com/v2/YjrzaRWOt1K4_oaI7D086RrinO3qQNbN";
         // Minimal ABI
         const ABI = [
             "function currentPrice() view returns (uint256)",
